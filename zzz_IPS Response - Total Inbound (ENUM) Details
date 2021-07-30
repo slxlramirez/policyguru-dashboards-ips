@@ -271,6 +271,7 @@ SELECT   to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval 
          count(distinct destinationnumber) as destinationnumbers
 FROM     master.flowstart a 
 WHERE    a.routername LIKE 'enum%' AND
+         a.direction = 1 AND
          a.analyticstime &gt;=  (($date_value$+( 0*60) - (7*24*60*60))*1000)::bigint AND
          a.analyticstime  &lt;  (($date_value$+(15*60) - (7*24*60*60))*1000)::bigint
 GROUP BY to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval '1 day'),'YYYY-MM-DD hh24:mi:ss')
@@ -281,6 +282,7 @@ SELECT   to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval 
          count(distinct destinationnumber) as destinationnumbers
 FROM     master.flowstart a 
 WHERE    a.routername LIKE 'enum%' AND
+         a.direction = 1 AND
          a.analyticstime &gt;=  (($date_value$+( 0*60) - (14*24*60*60))*1000)::bigint AND
          a.analyticstime  &lt;  (($date_value$+(15*60) - (14*24*60*60))*1000)::bigint
 GROUP BY to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval '1 day'),'YYYY-MM-DD hh24:mi:ss')
@@ -291,6 +293,7 @@ SELECT   to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval 
          count(distinct destinationnumber) as destinationnumbers
 FROM     master.flowstart a 
 WHERE    a.routername LIKE 'enum%' AND
+         a.direction = 1 AND
          a.analyticstime &gt;=  (($date_value$+( 0*60) - (21*24*60*60))*1000)::bigint AND
          a.analyticstime  &lt;  (($date_value$+(15*60) - (21*24*60*60))*1000)::bigint
 GROUP BY to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval '1 day'),'YYYY-MM-DD hh24:mi:ss')
@@ -301,6 +304,7 @@ SELECT   to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval 
          count(distinct destinationnumber) as destinationnumbers
 FROM     master.flowstart a 
 WHERE    a.routername LIKE 'enum%' AND
+         a.direction = 1 AND
          a.analyticstime &gt;=  (($date_value$+( 0*60) - (28*24*60*60))*1000)::bigint AND
          a.analyticstime  &lt;  (($date_value$+(15*60) - (28*24*60*60))*1000)::bigint
 GROUP BY to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval '1 day'),'YYYY-MM-DD hh24:mi:ss')
@@ -311,6 +315,7 @@ SELECT   to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval 
          count(distinct destinationnumber) as destinationnumbers
 FROM     master.flowstart a 
 WHERE    a.routername LIKE 'enum%' AND
+         a.direction = 1 AND
          a.analyticstime &gt;=  (($date_value$+( 0*60) - (35*24*60*60))*1000)::bigint AND
          a.analyticstime  &lt;  (($date_value$+(15*60) - (35*24*60*60))*1000)::bigint
 GROUP BY to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval '1 day'),'YYYY-MM-DD hh24:mi:ss')
@@ -321,6 +326,7 @@ SELECT   to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval 
          count(distinct destinationnumber) as destinationnumbers
 FROM     master.flowstart a 
 WHERE    a.routername LIKE 'enum%' AND
+         a.direction = 1 AND
          a.analyticstime &gt;=  (($date_value$+( 0*60) - (42*24*60*60))*1000)::bigint AND
          a.analyticstime  &lt;  (($date_value$+(15*60) - (42*24*60*60))*1000)::bigint
 GROUP BY to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval '1 day'),'YYYY-MM-DD hh24:mi:ss')
@@ -331,6 +337,7 @@ SELECT   to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval 
          count(distinct destinationnumber) as destinationnumbers
 FROM     master.flowstart a 
 WHERE    a.routername LIKE 'enum%' AND
+         a.direction = 1 AND
          a.analyticstime &gt;=  (($date_value$+( 0*60) - (49*24*60*60))*1000)::bigint AND
          a.analyticstime  &lt;  (($date_value$+(15*60) - (49*24*60*60))*1000)::bigint
 GROUP BY to_char(date_trunc('week', to_timestamp(analyticstime/1000) - interval '1 day'),'YYYY-MM-DD hh24:mi:ss')
