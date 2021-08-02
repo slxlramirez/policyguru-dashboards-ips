@@ -1,0 +1,139 @@
+<dashboard>
+  <label>zzz_IPS Response - Total Terminated Details</label>
+  <row>
+    <panel>
+      <single>
+        <title>Selected Hour</title>
+        <search>
+          <query>| dbxquery 
+connection="ngp_connection" 
+timeout=1800 query="
+SELECT   to_char(to_timestamp($date_value$),'YYYY-MM-DD hh24:mi:ss (tz)')
+" shortnames=t
+| table *</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Calls by Minute (Selected Interval + Prev 30m) by PolicyDisposition</title>
+        <search base="cdr">
+          <query>| eval _time=strptime(flowtime_ts_cst6cdt,"%Y-%m-%d %H:%M:%S")
+| timechart fixedrange=false span=1m count by policydisposition</query>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Top 10 Terminated Source Numbers</title>
+        <search base="cdr">
+          <query>| search policydisposition = "TERMINATED"
+| stats count by sourcenumber ruleid
+| sort -count</query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>Top 10 Terminated Destination Numbers</title>
+        <search base="cdr">
+          <query>| search policydisposition = "TERMINATED"
+| stats count by destinationnumber ruleid
+| sort -count</query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>CDR</title>
+        <search id="cdr">
+          <query>| dbxquery 
+connection="ngp_connection" 
+timeout=1800 query="
+SELECT
+       m.flowtime_ts_cst6cdt,
+       m.flowtime_ts_gmt,
+       m.sourcenumber,
+       m.sourceregion,
+       m.destinationnumber,
+       m.destinationregion,
+       m.direction,
+       m.routername,
+       n.policydisposition,
+       n.ruleid
+FROM
+(
+SELECT a.guid,
+       to_timestamp(a.flowtime/1000) at time zone 'CST6CDT' as flowtime_ts_cst6cdt,
+       to_timestamp(a.flowtime/1000) at time zone 'GMT' as flowtime_ts_gmt,
+       a.sourcenumber,
+       a.sourceregion,
+       a.destinationnumber,
+       a.destinationregion,
+       CASE a.direction
+        WHEN 1 THEN 'INBOUND'
+        ELSE 'OUTBOUND'
+       END as direction,
+       a.routername
+FROM    master.flowstart a
+WHERE    a.routername LIKE 'enum%' AND
+         a.analyticstime &gt;=  (($date_value$-(2*15*60))*1000)::bigint AND
+         a.analyticstime  &lt;  (($date_value$+(15*60))*1000)::bigint AND
+         a.guid IN
+         (
+        SELECT guid FROM   master.policyflowdetails s
+        WHERE  s.routername LIKE 'enum%' AND
+               s.analyticstime &gt;=  (($date_value$-(2*15*60))*1000)::bigint AND
+         s.analyticstime  &lt;  (($date_value$+(15*60))*1000)::bigint AND
+               policydisposition = 2
+         )
+) m INNER JOIN
+(
+SELECT s.guid,
+       CASE s.policydisposition
+         WHEN 0 THEN 'UNKNOWN'
+         WHEN 1 THEN 'ALLOWED'
+         WHEN 2 THEN 'TERMINATED'
+         WHEN 3 THEN 'REDIRECTED'
+         WHEN 4 THEN 'TRANSFERRED'
+         WHEN 5 THEN 'UNANSWERED'
+         WHEN 6 THEN 'EXPIRED'
+         ELSE s.policydisposition::varchar
+       END as policydisposition,
+       s.ruleid
+FROM   master.policyflowdetails s
+WHERE  s.routername LIKE 'enum%' AND
+       s.analyticstime &gt;=  (($date_value$-(2*15*60))*1000)::bigint AND
+       s.analyticstime  &lt;  (($date_value$+(15*60))*1000)::bigint AND
+       policydisposition = 2
+) n ON m.guid=n.guid
+" shortnames=t
+| table flowtime_ts_gmt flowtime_ts_cst6cdt sourcenumber sourceregion destinationnumber destinationregion direction routername policydisposition ruleid</query>
+          <earliest>-15m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>
