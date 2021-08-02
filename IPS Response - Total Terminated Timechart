@@ -1,0 +1,85 @@
+<dashboard>
+  <label>IPS Response - Total Terminated Timechart</label>
+  <row>
+    <panel>
+      <chart>
+        <title>Calls by 15m Buckets (Log Scale)</title>
+        <search base="parent">
+          <query>| eval _time=strptime(buckets,"%Y-%m-%d %H:%M") 
+| timechart span=15m sum(calls) by policydisposition</query>
+        </search>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.drilldown">all</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">/app/search/zzz_ips_response__total_terminated_details_?date_value=$click.value$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>By Disposition</title>
+        <search base="parent">
+          <query>| chart sum(calls) by policydisposition</query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <table>
+        <search base="parent">
+          <query>| chart sum(calls) by ruleid
+| rename sum(calls) as calls
+| sort -calls</query>
+        </search>
+        <option name="drilldown">cell</option>
+        <drilldown>
+          <link target="_blank">/app/search/ips_response__total_terminated_rule_click_action?ruleId_token=$click.value$</link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Last 24 Hours 15m Buckets</title>
+        <search id="parent">
+          <query>| dbxquery 
+connection="ngp_connection" 
+timeout=1800 query="
+SELECT   to_char(to_timestamp(floor((extract('epoch' from to_timestamp(s.analyticstime/1000)) / 900 )) * 900),'YYYY-MM-DD hh24:mi:ss') as buckets,
+         CASE 
+         WHEN s.policydisposition=0	THEN 'UNKNOWN'
+         WHEN s.policydisposition=1	THEN 'ALLOWED'
+         WHEN s.policydisposition=2	THEN 'TERMINATED'
+         WHEN s.policydisposition=3	THEN 'REDIRECTED'
+         WHEN s.policydisposition=4	THEN 'TRANSFERRED'
+         WHEN s.policydisposition=5	THEN 'UNANSWERED'
+         WHEN s.policydisposition=6	THEN 'EXPIRED'
+         ELSE 'OTHER'
+         END as policydisposition,
+         s.ruleid,
+         COALESCE(count(s.guid),0) as calls
+FROM     master.policyflowdetails s
+WHERE    
+         s.analyticstime &gt;= (extract (epoch from now() - INTERVAL '24 HOUR') * 1000)::bigint
+GROUP BY  to_char(to_timestamp(floor((extract('epoch' from to_timestamp(s.analyticstime/1000)) / 900 )) * 900),'YYYY-MM-DD hh24:mi:ss'), s.policydisposition, s.ruleid
+ORDER BY  to_char(to_timestamp(floor((extract('epoch' from to_timestamp(s.analyticstime/1000)) / 900 )) * 900),'YYYY-MM-DD hh24:mi:ss'), s.policydisposition, s.ruleid
+" shortnames=t</query>
+          <earliest>-15m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>
